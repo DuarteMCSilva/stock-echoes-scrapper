@@ -1,11 +1,15 @@
 import yfinance
 import json
+import math
 
 
 def handle_get_financials(event, context):
     request_ticker: str = event['queryStringParameters']['ticker']
 
     ticker = yfinance.Ticker(request_ticker)
+
+    state = getStationaryFinancials(ticker)
+    momentum = getFinancialsByDate(ticker)
 
     financials = {
         "ticker": request_ticker,
@@ -14,8 +18,8 @@ def handle_get_financials(event, context):
         "marketCap": ticker.fast_info['marketCap'],
         "shares": ticker.fast_info['shares'],
         "beta": ticker.info['beta'],
-        "state": getStationaryFinancials(ticker),
-        "momentum": getFinancialsByDate(ticker)
+        "state": state,
+        "momentum": momentum
     }
 
     return {
@@ -57,11 +61,25 @@ def getFinancialsByDate(ticker):
     return momentum_metrics
 
 def getValuesWithRelativeChange(value, previous):
-    try:
-        previous_val = previous.get('value')
-        return { "value": value, "change": value/previous_val }
-    except:
+
+    if math.isnan(value):
+            return { }
+
+    if previous == None:
         return { "value": value }
+
+    previous_val = previous.get('value')
+
+    if previous_val == None:
+        return { "value": value }
+
+    change = value/previous_val
+
+    if change < 0:
+        return { "value": value }
+
+    return { "value": value, "change": change }
+
 
 def getStationaryFinancials(ticker):
     last_balance_sheet = ticker.quarterly_balance_sheet
