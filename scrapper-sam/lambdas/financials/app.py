@@ -12,21 +12,21 @@ def handle_get_financials(event, context):
     momentum = getFinancialsByDate(ticker)
 
     financials = {
-        "ticker": request_ticker,
-        "sector": ticker.info['sector'],
-        "currency": ticker.fast_info['currency'],
-        "marketCap": ticker.fast_info['marketCap'],
-        "shares": ticker.fast_info['shares'],
-        "beta": ticker.info['beta'],
-        "state": state,
-        "momentum": momentum
+        'ticker': request_ticker,
+        'sector': ticker.info['sector'],
+        'currency': ticker.fast_info['currency'],
+        'marketCap': ticker.fast_info['marketCap'],
+        'shares': ticker.fast_info['shares'],
+        'beta': ticker.info['beta'],
+        'state': state,
+        'momentum': momentum
     }
 
     return {
-        "statusCode": 200,
-        "body": json.dumps(financials),
-        "headers": {
-            "Content-Type": "application/json",
+        'statusCode': 200,
+        'body': json.dumps(financials),
+        'headers': {
+            'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': 'http://localhost:4200',
             'Access-Control-Allow-Methods': 'POST, GET'
         }
@@ -49,11 +49,11 @@ def getFinancialsByDate(ticker):
 
 
         data = {
-            "period": format_date,
-            "revenue": getValuesWithRelativeChange(income_st.loc['Total Revenue'], data.get('revenue')),
-            "grossProfit": getValuesWithRelativeChange(income_st.loc['Gross Profit'], data.get('grossProfit')),
-            "netIncome": getValuesWithRelativeChange(income_st.loc['Net Income'], data.get('netIncome')),
-            "fcf": getValuesWithRelativeChange(cash_flow_st.loc['Free Cash Flow'], data.get('fcf'))
+            'period': format_date,
+            'revenue': getValuesWithRelativeChange(income_st.loc['Total Revenue'], data.get('revenue')),
+            'grossProfit': getValuesWithRelativeChange(income_st.loc['Gross Profit'], data.get('grossProfit')),
+            'netIncome': getValuesWithRelativeChange(income_st.loc['Net Income'], data.get('netIncome')),
+            'fcf': getValuesWithRelativeChange(cash_flow_st.loc['Free Cash Flow'], data.get('fcf'))
         }
 
         momentum_metrics.append(data)
@@ -66,27 +66,26 @@ def getValuesWithRelativeChange(value, previous):
             return { }
 
     if previous == None:
-        return { "value": value }
+        return { 'value': value }
 
     previous_val = previous.get('value')
 
     if previous_val == None:
-        return { "value": value }
+        return { 'value': value }
 
     change = value/previous_val
 
     if change < 0:
-        return { "value": value }
+        return { 'value': value }
 
-    return { "value": value, "change": change }
-
+    return { 'value': value, 'change': change }
 
 def getStationaryFinancials(ticker):
     last_balance_sheet = ticker.quarterly_balance_sheet
 
     current_metrics = {
-        "debt": last_balance_sheet.loc['Total Debt'].iloc[0],
-        "cash": last_balance_sheet.loc['Cash And Cash Equivalents'].iloc[0],
+        'debt': last_balance_sheet.loc['Total Debt'].iloc[0],
+        'cash': last_balance_sheet.loc['Cash And Cash Equivalents'].iloc[0],
     }
 
     return current_metrics
