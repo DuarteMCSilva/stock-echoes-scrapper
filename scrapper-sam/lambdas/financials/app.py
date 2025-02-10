@@ -10,14 +10,18 @@ def handle_get_financials(event, context):
 
     state = getStationaryFinancials(ticker)
     momentum = getFinancialsByDate(ticker)
+    info = ticker.info
+    currency = ticker.fast_info['currency']
+    marketCap = ticker.fast_info['marketCap']
+    shares = ticker.fast_info['shares']
 
     financials = {
         'ticker': request_ticker,
-        'sector': ticker.info['sector'],
-        'currency': ticker.fast_info['currency'],
-        'marketCap': ticker.fast_info['marketCap'],
-        'shares': ticker.fast_info['shares'],
-        'beta': ticker.info['beta'],
+        'sector': info['sector'],
+        'currency': currency,
+        'marketCap': marketCap,
+        'shares': shares,
+        'beta': info['beta'],
         'state': state,
         'momentum': momentum
     }
