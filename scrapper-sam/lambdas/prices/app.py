@@ -1,6 +1,5 @@
 import yfinance
 import pandas as pd
-import json
 
 
 def handle_get_prices_request(event, context):
@@ -9,11 +8,13 @@ def handle_get_prices_request(event, context):
 
     historical_prices = process_historical_prices_by_date(request_ticker, period)
 
-    close_prices = historical_prices.set_index('Date')['Close'].to_dict()
+    close_prices = historical_prices[['Date', 'Close']] \
+        .rename(columns={"Date": "date", "Close": "close"}) \
+            .to_json(orient="records", compression="gzip")
 
     return {
         "statusCode": 200,
-        "body": json.dumps(close_prices),
+        "body": close_prices,
         "headers": {
             "Content-Type": "application/json",
             'Access-Control-Allow-Origin': 'http://localhost:4200',
