@@ -241,5 +241,11 @@ $RECYCLE.BIN/
 
 */build/*
 
-# End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
+# AWS SAM
 .aws-sam
+
+# Jupyter Notebooks 
+*.ipynb
+
+
+# End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
