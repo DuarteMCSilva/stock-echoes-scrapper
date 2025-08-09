@@ -3,8 +3,19 @@ import pandas as pd
 
 
 def handle_get_prices_request(event, context):
-    request_ticker: str = event['queryStringParameters']['ticker']
-    period: str = event['queryStringParameters']['p']
+    try:
+        request_ticker: str = event['queryStringParameters']['ticker']
+        period: str = event['queryStringParameters']['p']
+    except KeyError as e:
+        return {
+            'statusCode': 400,
+            'body': f'Missing parameter: {str(e)}',
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'http://localhost:4200',
+                'Access-Control-Allow-Methods': 'POST, GET'
+            }
+        }
 
     historical_prices = process_historical_prices_by_date(request_ticker, period)
 

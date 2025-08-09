@@ -4,7 +4,18 @@ import math
 
 
 def handle_get_financials(event, context):
-    request_ticker: str = event['queryStringParameters']['ticker']
+    try:
+        request_ticker: str = event['queryStringParameters']['ticker']
+    except KeyError as e:
+        return {
+            'statusCode': 400,
+            'body': f'Missing parameter: {str(e)}',
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'http://localhost:4200',
+                'Access-Control-Allow-Methods': 'POST, GET'
+            }
+        }
 
     ticker = yfinance.Ticker(request_ticker)
 
