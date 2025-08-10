@@ -1,6 +1,5 @@
 import yfinance
 import json
-import math
 import numbers
 
 
@@ -22,13 +21,25 @@ def handle_get_financials(event, context):
 
     try:
         ticker = getTicker(request_ticker)
-        info = getInfo(ticker)
         state = getStationaryFinancials(ticker)
         momentum = getFinancialsByDate(ticker)
-        fast_info = getFastInfo(ticker)
-        currency = fast_info['currency']
-        marketCap = fast_info['marketCap']
-        shares = fast_info['shares']
+
+    
+        financials = {
+            'ticker': request_ticker,
+            'state': state,
+            'momentum': momentum
+        }
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps(financials),
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': 'http://localhost:4200',
+                'Access-Control-Allow-Methods': 'POST, GET'
+            }
+        }
     except Exception as e:
         return {
             'statusCode': 500,
@@ -40,27 +51,6 @@ def handle_get_financials(event, context):
             }
         }
 
-    financials = {
-        'ticker': request_ticker,
-        'sector': safeReadFromDataFrame(info, 'sector'),
-        'currency': currency,
-        'marketCap': marketCap,
-        'shares': shares,
-        'beta': safeReadNumber(info, 'beta'),
-        'state': state,
-        'momentum': momentum
-    }
-
-    return {
-        'statusCode': 200,
-        'body': json.dumps(financials),
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': 'http://localhost:4200',
-            'Access-Control-Allow-Methods': 'POST, GET'
-        }
-    }
-
 def getTicker(ticker):
     try:
         ticker = yfinance.Ticker(ticker)
@@ -69,36 +59,13 @@ def getTicker(ticker):
         print(f'Error fetching ticker: {str(e)}')
         raise Exception(f'Error fetching ticker: {str(e)}')
 
-def getInfo(ticker):
-    try:
-        info = ticker.info
-        print(info)
-        return info
-    except Exception as e:
-        raise Exception(f'Error fetching info: {str(e)}')
-
-def getFastInfo(ticker):
-    fast_info = ticker.fast_info
-
-    try:
-        return {
-        'currency': safeReadFromDataFrame(fast_info, 'currency'),
-        'marketCap': safeReadNumber(fast_info, 'marketCap'),
-        'shares': safeReadNumber(fast_info, 'shares')
-    }
-    except KeyError as e:
-        print(f'Error fetching fast info: {str(e)}')
-        return {
-            'currency': 'Unknown',
-            'marketCap': 0,
-            'shares': 0
-        }
-
 def getFinancialsByDate(ticker):
     cash_flow = ticker.cash_flow
     income_statement = ticker.income_stmt
 
     dates = income_statement.columns.tolist()
+    # For some companies, an additional column is added with nan values.
+    dates = income_statement.columns.tolist()[:4]
     dates.reverse()
 
     momentum_metrics = []
@@ -124,7 +91,7 @@ def getFinancialsByDate(ticker):
 
 def getValuesWithRelativeChange(value, previous):
 
-    if math.isnan(value):
+    if (not isinstance(value, numbers.Number)):
             return { }
 
     if previous == None:
@@ -166,10 +133,10 @@ def safeReadNumber(df, column, index = None):
 
 def safeReadFromDataFrame(df, column, index = None):
     try:
-        if index != None:
-            value = df[column]
+        if index == None:
+            value = df.loc[column]
         else: 
-            value = df[column].iloc[index]
+            value = df.loc[column].iloc[index]
         return value
     except (AttributeError, KeyError, IndexError):
         print(f"Error reading from DataFrame: {column}, {index}")
