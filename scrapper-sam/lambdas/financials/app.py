@@ -104,8 +104,7 @@ def getValuesWithRelativeChange(value, previous):
 
     change = value/previous_val
 
-    if change < 0:
-        return { 'value': value }
+    change = round(change, 2)
 
     return { 'value': value, 'change': change }
 
