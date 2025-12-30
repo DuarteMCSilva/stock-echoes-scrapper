@@ -37,7 +37,6 @@ def get_info(event, context):
             }
         }
     except Exception as e:
-        print(financials)
         return {
             'statusCode': 500,
             'body': f'Error fetching financial data: {str(e)}',

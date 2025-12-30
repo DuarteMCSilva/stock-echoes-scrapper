@@ -8,14 +8,15 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 10
     MemorySize: 128
 
 Resources:
   ScrapperApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: dev
+      StageName: prod
+
   GetHistoricalPricesFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -23,15 +24,17 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ScrapperApiGateway
             Path: /historical-prices
             Method: get
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./lambdas/prices
       DockerTag: python3.9-v1
+
   GetFinancialsFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -39,15 +42,17 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ScrapperApiGateway
             Path: /financials
             Method: get
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./lambdas/financials
       DockerTag: python3.9-v1
+  
   GetInfoFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -55,14 +60,32 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        ApiEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ScrapperApiGateway
             Path: /info
             Method: get
     Metadata:
       Dockerfile: Dockerfile
       DockerContext: ./lambdas/ticker-info
+      DockerTag: python3.9-v1
+  GetLastPriceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ScrapperApiGateway
+            Path: /last-price
+            Method: get
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./lambdas/last-price
       DockerTag: python3.9-v1
 
 Outputs:
@@ -70,11 +93,8 @@ Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   ScrapperApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  GetHistoricalPricesFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt GetHistoricalPricesFunction.Arn
-  GetHistoricalPricesFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt GetHistoricalPricesFunction.Arn
+    Description: "API Gateway endpoint URL for Prod stage for ScrapperApiGateway function"
+    Value: !Sub "https://${ScrapperApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  ScrapperApiGatewayArn:
+    Description: "ScrapperApiGateway ARN"
+    Value: !GetAtt ScrapperApiGateway.Arn

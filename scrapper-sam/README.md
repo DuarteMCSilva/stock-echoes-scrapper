@@ -21,7 +21,7 @@ sam local invoke HelloWorldFunction --event events/event.json
 ```
 sam build
 
-sam local start-api
+sam local start-api -p 5001
 ```
 
 
